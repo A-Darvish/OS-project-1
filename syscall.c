@@ -7,6 +7,7 @@
 #include "x86.h"
 #include "syscall.h"
 
+int readcnt = 0;
 // User code makes a system call with INT T_SYSCALL.
 // System call number in %eax.
 // Arguments on the stack, from the user call to the C
@@ -104,30 +105,32 @@ extern int sys_wait(void);
 extern int sys_write(void);
 extern int sys_uptime(void);
 extern int sys_getProcCount(void);
+extern int sys_getReadCount(void);
 
 static int (*syscalls[])(void) = {
-[SYS_fork]    sys_fork,
-[SYS_exit]    sys_exit,
-[SYS_wait]    sys_wait,
-[SYS_pipe]    sys_pipe,
-[SYS_read]    sys_read,
-[SYS_kill]    sys_kill,
-[SYS_exec]    sys_exec,
-[SYS_fstat]   sys_fstat,
-[SYS_chdir]   sys_chdir,
-[SYS_dup]     sys_dup,
-[SYS_getpid]  sys_getpid,
-[SYS_sbrk]    sys_sbrk,
-[SYS_sleep]   sys_sleep,
-[SYS_uptime]  sys_uptime,
-[SYS_open]    sys_open,
-[SYS_write]   sys_write,
-[SYS_mknod]   sys_mknod,
-[SYS_unlink]  sys_unlink,
-[SYS_link]    sys_link,
-[SYS_mkdir]   sys_mkdir,
-[SYS_close]   sys_close,
-[SYS_getProcCount]   sys_getProcCount,
+[SYS_fork]         sys_fork,
+[SYS_exit]         sys_exit,
+[SYS_wait]         sys_wait,
+[SYS_pipe]         sys_pipe,
+[SYS_read]         sys_read,
+[SYS_kill]         sys_kill,
+[SYS_exec]         sys_exec,
+[SYS_fstat]        sys_fstat,
+[SYS_chdir]        sys_chdir,
+[SYS_dup]          sys_dup,
+[SYS_getpid]       sys_getpid,
+[SYS_sbrk]         sys_sbrk,
+[SYS_sleep]        sys_sleep,
+[SYS_uptime]       sys_uptime,
+[SYS_open]         sys_open,
+[SYS_write]        sys_write,
+[SYS_mknod]        sys_mknod,
+[SYS_unlink]       sys_unlink,
+[SYS_link]         sys_link,
+[SYS_mkdir]        sys_mkdir,
+[SYS_close]        sys_close,
+[SYS_getProcCount] sys_getProcCount,
+[SYS_getReadCount] sys_getReadCount,
 };
 
 void
@@ -137,6 +140,12 @@ syscall(void)
   struct proc *curproc = myproc();
 
   num = curproc->tf->eax;
+  if (num == SYS_read) {
+    readcnt++;
+  }
+  if (num == SYS_getReadCount) {
+    curproc->readCount = readcnt;
+  }
   if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
     curproc->tf->eax = syscalls[num]();
   } else {

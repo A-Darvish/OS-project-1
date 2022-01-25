@@ -121,6 +121,8 @@ int             wait(void);
 void            wakeup(void*);
 void            yield(void);
 int             getProcCount(void);
+int             threadCreate(void *stack);
+int             threadWait(void);
 
 // swtch.S
 void            swtch(struct context**, struct context*);

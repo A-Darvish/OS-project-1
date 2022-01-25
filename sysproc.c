@@ -101,3 +101,21 @@ sys_getReadCount(void)
 {
   return myproc()->readCount;
 }
+
+int
+sys_threadCreate(void)
+{
+  void *stack;
+  if (argptr(0, (void*)&stack, sizeof(*stack)) < 0)
+  {
+    return -1;
+  }
+  
+  return threadCreate((void*)stack);
+}
+
+int
+sys_threadWait(void)
+{
+  return threadWait();
+}
